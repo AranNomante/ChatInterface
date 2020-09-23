@@ -1,4 +1,4 @@
-# ChatInterface
+# Chat Interface
 
    Copyright 2020 Altuğ Ceylan
 
