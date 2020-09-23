@@ -1,4 +1,4 @@
-# ChatModule
+# ChatInterface
 
    Copyright 2020 Altuğ Ceylan
 
