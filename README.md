@@ -1,5 +1,4 @@
 # ChatModule
-postgresql, express, jquery, node.js
 
    Copyright 2020 Altuğ Ceylan
 
