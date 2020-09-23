@@ -2,7 +2,8 @@
 //get
 const getMailUsers="SELECT chat_user_id,last_login,user_name FROM mail_user WHERE user_id NOT IN ($1)";
 const getMailUser="SELECT chat_user_id,last_login,user_name FROM mail_user WHERE user_id = $1";
-const getMails="SELECT m.*,u.user_name as recipient_fname,u.last_login as recipient_last_login FROM mail m,mail_user u WHERE m.sender = $1 and m.recipient=u.chat_user_id;";
+const getMails="SELECT m.*,get_user_fullname(get_user_id(m.sender)) as sender_fname,get_user_last_login(m.sender) as sender_last_login," +
+    "get_user_fullname(get_user_id(m.recipient)) as recipient_fname, get_user_last_login(m.recipient) as recipient_last_login FROM mail m WHERE sender = $1 or m.recipient = $1";
 const getMessages="SELECT * FROM message WHERE chat_id = $1 order by sent_on ASC";
 //set
 const createMail="INSERT INTO mail(sender,recipient,subject,status) VALUES ($1,$2,$3,$4)";

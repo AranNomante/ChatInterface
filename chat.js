@@ -5,7 +5,7 @@ let mail_user = chat_module.mail_user;
 //let mail_users=chat_module.mail_users;
 let mails = chat_module.mails;
 let activeChat = (mails.length === 0) ? -1 : mails[0].chat_id;
-let activeChatObj = (mails.length === 0) ? -1 : mails[0];
+let activeChatObj = (mails.length === 0) ? null : mails[0];
 let activeChatMessages = [];//ordered from oldest to latest
 let change = false;
 let allow_change = false;
@@ -293,29 +293,35 @@ if (mode === 'chat') {
 //project specific scripts
 
 function load_mails(elem) {
-    console.log('Chat visual refresh');
-    $(`#${elem}`).empty();
-    get_mails().forEach((mail, i) => {
-        let tab = tab_builder(mail, (mail.chat_id === activeChat))
-        $(`#${elem}`).append(tab);
-    })
+    if (mails.length > 0) {
+        console.log('Chat visual refresh');
+        $(`#${elem}`).empty();
+        get_mails().forEach((mail, i) => {
+            let tab = tab_builder(mail, (mail.chat_id === activeChat))
+            $(`#${elem}`).append(tab);
+        })
+    }
 }
 
 function load_chat_header(elem) {
-    console.log(elem);
-    console.log('Chat header visual refresh');
-    $(`#${elem}`).empty();
-    $(`#${elem}`).append(chat_header_builder());
+    if (activeChatObj) {
+        console.log(activeChatObj)
+        console.log('Chat header visual refresh');
+        $(`#${elem}`).empty();
+        $(`#${elem}`).append(chat_header_builder());
+    }
 }
 
 function load_chat_messages(elem) {
-    console.log('Chat visual refresh');
-    $(`#${elem}`).empty();
-    get_messages().forEach(message => {
-        $(`#${elem}`).append(chat_message_builder(message));
-    })
-    $(`#${elem}`).append(`<div class="mCustomScrollbar">
+    if (activeChatMessages.length > 0) {
+        console.log('Chat visual refresh');
+        $(`#${elem}`).empty();
+        get_messages().forEach(message => {
+            $(`#${elem}`).append(chat_message_builder(message));
+        })
+        $(`#${elem}`).append(`<div class="mCustomScrollbar">
                                         </div>`);
+    }
 }
 
 function chat_message_builder(message) {
@@ -331,12 +337,18 @@ function chat_message_builder(message) {
 }
 
 function chat_header_builder() {
+    let title;
+    if (get_user().chat_user_id === activeChatObj.recipient) {
+        title = activeChatObj.sender_fname;
+    } else {
+        title = activeChatObj.recipient_fname;
+    }
     const header = `
                                         <div class="user-status">
                                             <div class="user-avatar">
                                                 <img src="../public/images/left-imgs/img-1.jpg" alt="">
                                             </div>
-                                            <p class="user-status-title"><span class="bold">${activeChatObj.recipient_fname}</span></p>
+                                            <p class="user-status-title"><span class="bold">${title}</span></p>
                                             <!--<p class="user-status-tag online">Online</p>-->
                                             <div class="user-status-time floaty eps_dots eps_dots5 more_dropdown">
                                                 <a href="#"><i class="uil uil-ellipsis-h"></i></a>
@@ -353,6 +365,15 @@ function chat_header_builder() {
 }
 
 function tab_builder(mail, active) {
+    let title;
+    let llogin;
+    if (get_user().chat_user_id === mail.recipient) {
+        title = mail.sender_fname;
+        llogin = new Date(mail.sender_last_login);
+    } else {
+        title = mail.recipient_fname;
+        llogin = new Date(mail.recipient_last_login);
+    }
     const tab = `
                 <div class="chat__message__dt ${(active) ? 'active' : ''}" id="chat_${mail.chat_id}" data-sender="${mail.sender}">
                     <div class="user-status">
@@ -360,9 +381,9 @@ function tab_builder(mail, active) {
                              <img src="../public/images/left-imgs/img-1.jpg" alt="">
                              ${(mail.status === 'NewMessage') ? '<div class="msg__badge">!</div>' : ''}                       
                          </div>
-                         <p class="user-status-title"><span class="bold">${mail.recipient_fname}</span></p>
+                         <p class="user-status-title"><span class="bold">${title}</span></p>
                          <p class="user-status-text">${mail.subject}</p>
-                         <p class="user-status-time floaty">${new Date(mail.recipient_last_login).toLocaleString()}</p>
+                         <p class="user-status-time floaty">${llogin.toLocaleString()}</p>
                          </div>
                     </div>`
     return tab;
