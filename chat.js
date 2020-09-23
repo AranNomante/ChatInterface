@@ -146,7 +146,6 @@ async function switch_chat(chat_id) {
         for (let i = 0; i < mails.length; i++) {
             if (mails[i].chat_id === chat_id) {
                 activeChat = chat_id;
-                pending_chat = null;
                 activeChatObj = mails[i];
                 await refreshMessages();
                 success = true;
@@ -256,9 +255,9 @@ async function init_chat() {
         allow_change = false;
         await refreshMails();
         await refreshMessages();
-		load_mails('mail_tab');
-		load_chat_header('chat_header');
-		load_chat_messages('messages');
+        load_mails('mail_tab');
+        load_chat_header('chat_header');
+        load_chat_messages('messages');
     }
     //debug_print(get_messages());
     //console.log(JSON.stringify(mails, null, 2));
@@ -392,8 +391,7 @@ function tab_builder(mail, active) {
 $(document).on('click', '.chat__message__dt', async function () {
     $(this).parent().children().removeClass('active');
     $(this).addClass('active');
-    pending_chat = Number(this.id.substring(5, this.id.length));
-    const success = await switch_chat(pending_chat);
+    const success = await switch_chat(Number(this.id.substring(5, this.id.length)));
     if (!success) {
         alert('Error while switching chats!');
     }
@@ -401,8 +399,7 @@ $(document).on('click', '.chat__message__dt', async function () {
 $(document).on('click', '.send_msg', async function () {
     const body = $('#chat-widget-message-text-2').val();
     if (body.length > 0) {
-        pending_message = body;
-        const success = await send_message(pending_message);
+        const success = await send_message(body);
         if (!success) {
             alert('Error while sending message!');
         }
