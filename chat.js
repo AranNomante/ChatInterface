@@ -256,10 +256,10 @@ async function init_chat() {
         allow_change = false;
         await refreshMails();
         await refreshMessages();
+		load_mails('mail_tab');
+		load_chat_header('chat_header');
+		load_chat_messages('messages');
     }
-    load_mails('mail_tab');
-    load_chat_header('chat_header');
-    load_chat_messages('messages');
     //debug_print(get_messages());
     //console.log(JSON.stringify(mails, null, 2));
     //console.log(JSON.stringify(activeChatMessages, null, 2));
