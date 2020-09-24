@@ -267,7 +267,7 @@ async function init_chat() {
 }
 
 
-//increment update_count on change
+//increment update_count on change todo
 function check_updates() {
     update_count = 0;
     mails.forEach(mail => {
@@ -364,8 +364,11 @@ function chat_header_builder() {
 }
 
 function tab_builder(mail, active) {
+    let usr_id = get_user().chat_user_id;
     let title;
     let llogin;
+    let newmsg = (usr_id === mail.recipient && mail.seen_recipient === '0') ? true :
+        (usr_id === mail.sender && mail.seen_sender === '0');
     if (get_user().chat_user_id === mail.recipient) {
         title = mail.sender_fname;
         llogin = new Date(mail.sender_last_login);
@@ -378,7 +381,7 @@ function tab_builder(mail, active) {
                     <div class="user-status">
                          <div class="user-avatar">
                              <img src="../public/images/left-imgs/img-1.jpg" alt="">
-                             ${(mail.status === 'NewMessage') ? '<div class="msg__badge">!</div>' : ''}                       
+                             ${(newmsg) ? '<div class="msg__badge">!</div>' : ''}                       
                          </div>
                          <p class="user-status-title"><span class="bold">${title}</span></p>
                          <p class="user-status-text">${mail.subject}</p>
@@ -398,11 +401,15 @@ $(document).on('click', '.chat__message__dt', async function () {
 })
 $(document).on('click', '.send_msg', async function () {
     const body = $('#chat-widget-message-text-2').val();
-    if (body.length > 0) {
+    if (body.length > 0 && body.length<301) {
         const success = await send_message(body);
         if (!success) {
             alert('Error while sending message!');
+        }else{
+            $('#chat-widget-message-text-2').val('');
         }
+    }else{
+        alert('Check message length');
     }
 })
 $(document).on('click', '#submit_mail', function () {
