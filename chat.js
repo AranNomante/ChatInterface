@@ -410,7 +410,12 @@ $(document).on('click', '#submit_mail', function () {
     const msg = $('#mail_msg').val();
     if (recipient.length > 0 && msg.length > 0) {
         const chat_id = recipient.split('#')[1];
-        if (chat_id && chat_id.length > 0) {
+        if (chat_id && chat_id.length > 0 && !(chat_id === get_user().chat_user_id)) {
+            mails.forEach(mail => {
+                if (mail.recipient === chat_id || mail.sender === chat_id) {
+                    return;
+                }
+            })
             createChatandSendMsg(Number(chat_id), msg)
         }
     }
