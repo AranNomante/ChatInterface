@@ -1,6 +1,6 @@
 const chat_module = JSON.parse(document.currentScript.getAttribute('data-module'));
 const mode = document.currentScript.getAttribute('data-chatPage');
-if (chat_module) {
+if (chat_module && !chat_module.mailError) {
     let mail_user = chat_module.mail_user;
 //let mail_users=chat_module.mail_users;
     let mails = chat_module.mails;
@@ -192,7 +192,7 @@ if (chat_module) {
                     }
                 } catch (e) {
                     resolve('request failed');
-                    console.log(e);
+                    //console.log(e);
                 }
             };
             request.onerror = function (e) {
@@ -319,7 +319,7 @@ if (chat_module) {
 
     function load_mails(elem) {
         if (mails.length > 0) {
-            console.log('Chat visual refresh');
+            //console.log('Chat visual refresh');
             $(`#${elem}`).empty();
             get_mails().forEach((mail, i) => {
                 let tab = tab_builder(mail, (mail.chat_id === activeChat))
@@ -331,7 +331,7 @@ if (chat_module) {
     function load_chat_header(elem) {
         if (activeChatObj) {
             //console.log(activeChatObj)
-            console.log('Chat header visual refresh');
+            //console.log('Chat header visual refresh');
             $(`#${elem}`).empty();
             $(`#${elem}`).append(chat_header_builder());
         }
@@ -339,7 +339,7 @@ if (chat_module) {
 
     function load_chat_messages(elem) {
         if (activeChatMessages.length > 0) {
-            console.log('Chat visual refresh');
+            //console.log('Chat visual refresh');
             $(`#${elem}`).empty();
             get_messages().forEach(message => {
                 $(`#${elem}`).append(chat_message_builder(message));
@@ -350,7 +350,7 @@ if (chat_module) {
 
     function update_chat_messages(elem) {
         if (activeChatMessages.length > 0) {
-            console.log('Chat visual update');
+            //console.log('Chat visual update');
             get_unseen_messages().forEach(message => {
                 $(`#${elem}`).append(chat_message_builder(message));
             })
@@ -449,31 +449,42 @@ if (chat_module) {
         const success = await switch_chat(Number(this.id.substring(5, this.id.length)));
         if (!success) {
             //alert('Slow down while switching chats!');
-            console.log('chatswitch success', success);
+            //console.log('chatswitch success', success);
         }
     })
+    let pending_msg = false;
     $(document).on('click', '#send_msg', async function () {
-        const body = $('#message_body').val();
-        if (body.length > 0 && body.length < 301) {
-            const success = await send_message(body);
-            if (!success) {
-                //alert('Slow down while sending messages!');
-                console.log('sendmsgsuccess', success);
+        if (!pending_msg) {
+            pending_msg = true;
+            const body = $('#message_body').val();
+            if (body.length > 0 && body.length < 301) {
+                const success = await send_message(body);
+                if (!success) {
+                    alert('Your message may not has been sent, try refreshing the page.');
+                    //console.log('sendmsgsuccess', success);
+                }
+                //fixed sending messages while a chat is not selected
+                if (!(activeChat === -1)) {
+                    $('#messages').append(chat_message_builder({
+                        author: get_user().chat_user_id,
+                        body: body,
+                        sent_on: new Date().toJSON()
+                    }));
+                }
+                $('#message_body').val('');
+            } else {
+                alert('Check message length');
             }
-            $('#message_body').val('');
-            $('#messages').append(chat_message_builder({
-                author: get_user().chat_user_id,
-                body: body,
-                sent_on: new Date().toJSON()
-            }));
-        } else {
-            alert('Check message length');
+            pending_msg = false;
         }
     })
 
-
+    let pending_mail = false;
     $(document).on('click', '#submit_mail', function () {
-        processNewMail();
+        if (!pending_mail) {
+            pending_mail=true;
+            processNewMail();
+        }
     })
 
     function processNewMail() {
@@ -498,6 +509,7 @@ if (chat_module) {
                                 change = false;
                             });
                         }
+                        pending_mail=false;
                     })
                 }
             }
@@ -524,5 +536,15 @@ if (chat_module) {
 
         })
     }
+
+    $(document).keyup(function (event) {
+        if (event.key === 'Enter') {
+            if ($('#createmail').hasClass('show')) {
+                $('#submit_mail').click();
+            } else {
+                $('#send_msg').click();
+            }
+        }
+    })
 
 }
